@@ -1,0 +1,13 @@
+{
+    "name": "maalls/bankcrawler",
+    "require": {
+        "symfony/dom-crawler": "~2.6",
+        "symfony/yaml": "~2.6",
+        "fabpot/goutte": "~2.0"
+    },
+    "autoload": {
+        "psr-4": {"Maalls\\BankCrawler\\": "src"}
+    }
+}
+
+

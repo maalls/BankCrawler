@@ -1,6 +1,6 @@
 <?php
 
-namespace Maalls\Crawler;
+namespace Maalls\BankCrawler;
 
 class Smbc {
 
