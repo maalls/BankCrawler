@@ -27,6 +27,7 @@ class Smbc {
     public function setClient(\Goutte\Client $client = null) {
 
         $this->client = $client;
+        if(!$this->client) $this->client = new \Goutte\Client();
 
         if($this->client) $this->init();
 
@@ -85,40 +86,49 @@ class Smbc {
 
         $crawler = $this->submit(array(
             "M_START_YMD" => "20140101", 
-            "M_END_YMD" => "20150307",
+            "M_END_YMD" => "20150315",
             "FromYear" => "26",
             "FromMonth" => "01",
             "FromDate" => "01",
             "ToYear" => "27",
             "ToMonth" => "03",
-            "ToDate" => "07"));
+            "ToDate" => "15"));
 
-        $firstEntries = $this->getEntries($crawler);
-        $entries = $crawler->filterXPath('//div[@class="pageNum"]//a')->each(function($link, $i) {
+        $entries = $this->getEntries($crawler);
+        $i = 1;
+        do {
 
-            //echo $link->attr("href") . PHP_EOL;
-            
-            //return $link->attr("href");
-            echo "Processing page " . ($i + 1) . PHP_EOL;
-            //$crawler = $this->client->click($link);
+            $links = $crawler->filterXPath('//div[@class="pageNum"]//a[' . $i . ']')->each(function($link, $i) {
 
-            $this->client->request("GET", $link->attr("href"));
-            $crawler = $this->client->request("GET", $this->displayUrl);
-            $this->extractForm($crawler);
-            $html = $crawler->html();
-            $entries = $this->getEntries($crawler);
-            echo count($entries) . " entries found." . PHP_EOL;
-            //sleep(1);
-
-            return $entries;
+                return $link->attr("href");
 
 
-        });
+            });
 
-        array_unshift($entries, $firstEntries);
-        var_dump($entries);
+            if($links) {
+                $link = $links[0];
 
-        echo "DONE" . PHP_EOL;
+                $this->client->request("GET", $link);
+                $crawler = $this->client->request("GET", $this->displayUrl);
+                $this->extractForm($crawler);
+                $html = $crawler->html();
+                //file_put_contents(__dir__ . "/contents/" . urlencode($link->attr("href")) . ".html", $html);
+                $entries = array_merge($entries, $this->getEntries($crawler));
+
+            }
+            else {
+
+                break;
+
+            }
+
+            $i++;
+
+
+        }
+        while(true && $i < 20);
+
+        return $entries;
 
     }
 
@@ -170,7 +180,7 @@ class Smbc {
                 
                 $entry = $data->filterXPath('//td')->each(function($data, $i) {
 
-                    return trim($data->html(), " 　");
+                    return $data->html();
                     
                 });
 
@@ -197,13 +207,15 @@ class Smbc {
 
             list($date, $expense, $income, $e->description, $balance) = $entry;
             //var_dump($e);
+            $expense = trim($expense, " 　");
+            $income = trim($income, " 　");
             $e->balance = $this->formatNumber($balance);
-            var_dump($expense, $income);
+            
             $e->amount = $expense ? - $this->formatNumber($expense) : $this->formatNumber($income);
             
             if($date == '合計金額') continue;
 
-            list($e->year, $e->month, $e->day) = explode(".", $date);
+            list($e->year, $e->month, $e->day) = explode(".", str_replace(array(" ", "　"), "", $date));
             //var_dump($e);
 
             $e->year = 1988 + trim($e->year, "H");

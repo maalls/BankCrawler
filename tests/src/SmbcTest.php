@@ -18,7 +18,17 @@ class SmbcTest extends \PHPUnit_Framework_TestCase
 
         $entry = $smbc->getEntries($crawler);
 
-        var_dump($entry);
+        //var_dump($entry);
+
+    }
+
+    public function testIterate() {
+
+        $smbc = new Smbc();
+        $smbc->login("01595", "20538", "0314");
+        $entries = $smbc->iterate();
+
+
 
     }
 }
