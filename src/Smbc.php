@@ -68,9 +68,13 @@ class Smbc {
         $crawler = $this->post($values);
 
         $form = $crawler->selectButton("確認して次へ")->form();
-        $values = $form->getValues();
+        
+        if($form) {
 
-        $crawler = $this->post($values);
+            $values = $form->getValues();
+            $crawler = $this->post($values);
+
+        }
 
         $link = $crawler->selectLink("明細照会")->link();
         
@@ -108,6 +112,7 @@ class Smbc {
             if($links) {
                 $link = $links[0];
 
+                echo "Requesting " . $link . PHP_EOL;
                 $this->client->request("GET", $link);
                 $crawler = $this->client->request("GET", $this->displayUrl);
                 $this->extractForm($crawler);
@@ -121,7 +126,7 @@ class Smbc {
                 break;
 
             }
-
+            if($i == 1) $i++;
             $i++;
 
 
