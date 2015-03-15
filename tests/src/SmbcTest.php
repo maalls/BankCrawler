@@ -26,10 +26,13 @@ class SmbcTest extends \PHPUnit_Framework_TestCase
 
         $smbc = new Smbc();
         $smbc->login("01595", "20538", "0314");
-        $entries = $smbc->iterate();
+        $entries = $smbc->iterate("2015-03-01");
+        var_dump($entries);
 
 
 
     }
+
+
 }
 ?>

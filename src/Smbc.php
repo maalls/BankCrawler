@@ -4,6 +4,8 @@ namespace Maalls\BankCrawler;
 
 class Smbc {
 
+    const HEISEI_OFFSET = 1988;
+
     protected $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
 
     protected $cookieFilename = null;
@@ -67,14 +69,16 @@ class Smbc {
 
         $crawler = $this->post($values);
 
-        $form = $crawler->selectButton("確認して次へ")->form();
-        
-        if($form) {
+        /*$button = $crawler->selectButton("確認して次へ");
+        var_dump($button);
+        exit;
+        if($button) {
 
+            $form = $button->form();
             $values = $form->getValues();
             $crawler = $this->post($values);
 
-        }
+        }*/
 
         $link = $crawler->selectLink("明細照会")->link();
         
@@ -86,17 +90,51 @@ class Smbc {
     }
 
 
-    public function iterate() {
+    public function iterate($fromDate = null, $toDate = null) {
 
+        if($fromDate && $toDate) {
+
+            if($from > $until) throw new \Exception("from must be before until: $from, $until.");
+
+        }
+
+        if(!$toDate) {
+
+            $to = time() + 9*3600;
+            $toDate = date("Y-m-d", $to);
+
+        }
+        
+        if(!$fromDate) {
+
+            $to = strtotime($toDate);
+            $from = $to - 86400 * 364;
+            $fromDate = date("Y-m-d", $from);
+
+
+        }
+
+        list($toYear, $toMonth, $toDay) = explode("-", $toDate);
+        list($fromYear, $fromMonth, $fromDay) = explode("-", $fromDate);
+
+        $M_START_YMD = $fromYear . $fromMonth . $fromDay;
+        $M_END_YMD = $toYear . $toMonth . $toDay;
+
+        $fromYear = $this->toJapaneseYear($fromYear);
+        $toYear = $this->toJapaneseYear($toYear);
+
+        //var_dump($M_START_YMD, $fromYear, $fromMonth, $fromDay);
+        //var_dump($M_END_YMD, $toYear, $toMonth, $toDay);
+        
         $crawler = $this->submit(array(
-            "M_START_YMD" => "20140101", 
-            "M_END_YMD" => "20150315",
-            "FromYear" => "26",
-            "FromMonth" => "01",
-            "FromDate" => "01",
-            "ToYear" => "27",
-            "ToMonth" => "03",
-            "ToDate" => "15"));
+            "M_START_YMD" => $M_START_YMD, 
+            "M_END_YMD" => $M_END_YMD,
+            "FromYear" => $fromYear,
+            "FromMonth" => $fromMonth,
+            "FromDate" => $fromDay,
+            "ToYear" => $toYear,
+            "ToMonth" => $toMonth,
+            "ToDate" => $toDay));
 
         $entries = $this->getEntries($crawler);
         $i = 1;
@@ -223,7 +261,7 @@ class Smbc {
             list($e->year, $e->month, $e->day) = explode(".", str_replace(array(" ", "　"), "", $date));
             //var_dump($e);
 
-            $e->year = 1988 + trim($e->year, "H");
+            $e->year = $this->toGregorianYear(trim($e->year, "H"));
             $formatedEntries[] = $e;
 
         }
@@ -244,6 +282,18 @@ class Smbc {
         $this->client->request("POST", $this->commandUrl, $values);
         echo "Requesting page : " . $this->displayUrl . PHP_EOL;
         return $this->client->request("GET", $this->displayUrl);
+
+    }
+
+    public function toJapaneseYear($year) {
+
+        return $year - self::HEISEI_OFFSET;
+
+    }
+
+    public function toGregorianYear($year) {
+
+        return $year + self::HEISEI_OFFSET;
 
     }
 
