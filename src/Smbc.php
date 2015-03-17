@@ -2,15 +2,11 @@
 
 namespace Maalls\BankCrawler;
 
-class Smbc {
+class Smbc extends BankCrawler {
 
     const HEISEI_OFFSET = 1988;
 
-    protected $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.115 Safari/537.36";
-
-    protected $cookieFilename = null;
-    protected $client;
-
+    
     protected $form;
     
     protected $loginUrl = "https://direct.smbc.co.jp/aib/aibgsjsw5001.jsp";
@@ -18,40 +14,22 @@ class Smbc {
     protected $queryUrl = "https://direct3.smbc.co.jp/servlet/com.smbc.SUPGetServlet";
     protected $displayUrl = "https://direct3.smbc.co.jp/servlet/com.smbc.SUPRedirectServlet";
 
-    public function __construct(\Goutte\Client $client = null, $cookieFilename = "/tmp/cookie.jar") {
-
-        $this->cookieFilename = $cookieFilename;
-        $this->setClient($client);
-        
-
-    }
-
-    public function setClient(\Goutte\Client $client = null) {
-
-        $this->client = $client;
-        if(!$this->client) $this->client = new \Goutte\Client();
-
-        if($this->client) $this->init();
-
-    }
+    
 
     public function init() {
 
+
+        parent::init();
         $client = $this->client;
-        $client->setServerParameter('HTTP_USER_AGENT', $this->userAgent);
-        $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_COOKIESESSION, true);
-        $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_COOKIEJAR, $this->cookieFilename);
-        $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_COOKIEFILE, $this->cookieFilename);
-        $client->getClient()->setDefaultOption('config/curl/'.CURLINFO_HEADER_OUT, true);
+
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_SSL_VERIFYPEER, true);
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_SSLVERSION, 3);
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_FOLLOWLOCATION, true);
 
+
     }
 
     public function login($id1, $id2, $password) {
-
-        echo "Start login $id1 $id2 $password..." . PHP_EOL;
 
         $crawler = $this->client->request('GET', $this->loginUrl);
 
@@ -65,7 +43,6 @@ class Smbc {
         $values["USRID1"] = $id1;
         $values["USRID2"] = $id2;
         $values["PASSWORD"] = $pwd;
-        var_dump($values);
 
         $crawler = $this->post($values);
 
@@ -150,7 +127,6 @@ class Smbc {
             if($links) {
                 $link = $links[0];
 
-                echo "Requesting " . $link . PHP_EOL;
                 $this->client->request("GET", $link);
                 $crawler = $this->client->request("GET", $this->displayUrl);
                 $this->extractForm($crawler);
@@ -200,7 +176,6 @@ class Smbc {
         $parameters = array_merge($this->form->getValues(), $parameters);
         $this->form->setValues($parameters);
 
-        echo http_build_query($this->form->getValues()) . PHP_EOL;
         $this->client->submit($this->form);
         $crawler = $this->client->request("GET", $this->displayUrl);
         $this->extractForm($crawler);
@@ -278,9 +253,8 @@ class Smbc {
 
     public function post($values) {
 
-        echo "Submitting Login to Server: " . $this->commandUrl . PHP_EOL;
         $this->client->request("POST", $this->commandUrl, $values);
-        echo "Requesting page : " . $this->displayUrl . PHP_EOL;
+        
         return $this->client->request("GET", $this->displayUrl);
 
     }

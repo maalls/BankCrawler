@@ -25,9 +25,19 @@ class SmbcTest extends \PHPUnit_Framework_TestCase
     public function testIterate() {
 
         $smbc = new Smbc();
-        $smbc->login("01595", "20538", "0314");
+        $loginFile = __dir__ . "/config/smbc.login.txt";
+        if(!file_exists($loginFile)) {
+
+            throw new \Exception("You must create a login file in tests/config/smbc.login.txt like: id1-id2:password");
+
+        }
+        list($login, $password) = explode(":", file_get_contents($loginFile));
+        list($id1, $id2) = explode("-", $login);
+        $password = trim($password);
+        
+        $smbc->login($id1, $id2, $password);
         $entries = $smbc->iterate("2015-03-01");
-        var_dump($entries);
+        $this->assertTrue(count($entries) > 0);
 
 
 
