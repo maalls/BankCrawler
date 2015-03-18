@@ -1,8 +1,11 @@
 <?php
 
-namespace Maalls\BankCrawler;
+namespace Maalls\BankCrawler\Smbc;
 
-class Smbc extends BankCrawler {
+use Maalls\BankCrawler\BankCrawler;
+use Maalls\BankCrawler\Smbc\Entry;
+
+class Crawler extends BankCrawler {
 
     const HEISEI_OFFSET = 1988;
 
@@ -273,14 +276,3 @@ class Smbc extends BankCrawler {
 
 }
 
-class Entry {
-
-    public $year;
-    public $month;
-    public $day;
-
-    public $amount;
-    public $description;
-    public $balance;
-
-}

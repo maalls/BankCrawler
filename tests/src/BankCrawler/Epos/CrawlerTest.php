@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Maalls\BankCrawler;
-include_once __dir__ . "/../../vendor/autoload.php";
+namespace Tests\Maalls\BankCrawler\Epos;
+include_once __dir__ . "/../../../../vendor/autoload.php";
 
-use Maalls\BankCrawler\Epos;
+use Maalls\BankCrawler\Epos\Crawler as Epos;
 use Symfony\Component\DomCrawler\Crawler;
 
-class EposTest extends \PHPUnit_Framework_TestCase
+class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
 
     public function testExtractName() {

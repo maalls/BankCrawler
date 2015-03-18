@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Maalls\BankCrawler;
-include_once __dir__ . "/../../vendor/autoload.php";
+namespace Tests\Maalls\BankCrawler\Smbc;
+include_once __dir__ . "/../../../../vendor/autoload.php";
 
-use Maalls\BankCrawler\Smbc;
+use Maalls\BankCrawler\Smbc\Crawler as Smbc;
 use Symfony\Component\DomCrawler\Crawler;
 
-class SmbcTest extends \PHPUnit_Framework_TestCase
+class CrawlerTest extends \PHPUnit_Framework_TestCase
 {
     public function testGetEntries()
     {

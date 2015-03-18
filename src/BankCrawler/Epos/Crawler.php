@@ -1,8 +1,11 @@
 <?php
 
-namespace Maalls\BankCrawler;
+namespace Maalls\BankCrawler\Epos;
 
-class Epos extends BankCrawler {
+use Maalls\BankCrawler\BankCrawler;
+use Maalls\BankCrawler\Epos\Entry;
+
+class Crawler extends BankCrawler {
 
     public function init() {
 
@@ -235,13 +238,3 @@ class Epos extends BankCrawler {
     
 }
 
-class Entry {
-
-    public $date;
-    public $location;
-    public $amount;
-    public $due_month;
-    public $comment;
-    public $category;
-
-}
