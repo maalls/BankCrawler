@@ -50,49 +50,58 @@ class EposTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    /*public function testGetHistory() {
+    public function testIterate() {
 
         $epos = new Epos();
+        $this->login($epos);
 
-        list($loginId, $password) = $this->getLoginConf();
+        $results = $epos->iterate("2014-12-14", "2015-02-10");
 
-        $crawler = $epos->login($loginId, $password);
+        $first = $results[0];
+        $last = array_pop($results);
+        $this->assertEquals($first->date, "2014-12-14");
+        $this->assertEquals($last->date, "2015-02-09");
 
-        $epos->getHistory("2014", "12");
+    }
 
-
-    }*/
-
-    /*public function testLogin() {
+    public function testGetHistory() {
 
         $epos = new Epos();
+        $this->login($epos);
 
-        list($loginId, $password) = $this->getLoginConf();
+        $results = $epos->getHistory("2014", "12");
 
-        $crawler = $epos->login($loginId, $password);
+        $this->assertTrue(count($results) > 10);
+
+    }
+
+    public function testLogin() {
+
+        $epos = new Epos();
+        $crawler = $this->login($epos);
         
         $this->assertEquals("山門　麿実樹", $epos->extractName($crawler));
 
 
-    }*/
+    }
 
-    /*public function testHistory() {
+    protected function login($epos) {
 
-        $epos = new Epos();
         list($loginId, $password) = $this->getLoginConf();
         $crawler = $epos->login($loginId, $password);
-        $epos->getHistoryPreload();
-        //$history = $epos->history("2014", "12");
 
-    }*/
+        return $crawler;
+
+
+    }
 
     protected function getLoginConf() {
 
-        $loginFile = __dir__ . "/config/login.epos.txt";
+        $loginFile = __dir__ . "/config/epos.login.txt";
 
         if(!file_exists($loginFile)) {
         
-            throw new \Exception("login file required in tests/config/epos.login.text containing: loginid:password");
+            throw new \Exception("login file required in $loginFile containing: loginid:password");
 
         }
         return explode(":", file_get_contents($loginFile));

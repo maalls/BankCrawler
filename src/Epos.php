@@ -28,6 +28,53 @@ class Epos extends BankCrawler {
 
     }
 
+    public function iterate($from, $until) {
+
+        list($fromYear, $fromMonth, $fromDay) = explode("-", $from);
+        list($toYear, $toMonth, $toDay) = explode("-", $until);
+
+        $results = array();
+
+        for($year = $fromYear; $year <= $toYear; $year++) {
+
+            $minMonth = $year == $fromYear ? $fromMonth : 1;
+            $maxMonth = $year == $toYear ? $toMonth : 12;
+
+            for($month = $minMonth; $month <= $maxMonth; $month++) {
+            
+                $history = $this->getHistory($year, str_pad($month, 2, "0", STR_PAD_LEFT));
+
+                if($month == $fromMonth && $year == $fromYear) {
+
+                    foreach($history as $key => $entry) {
+
+                        if($entry->date < $from) unset($history[$key]);
+
+                    }
+
+                }
+
+                if($month == $toMonth && $year == $toYear) {
+
+                    foreach($history as $key => $entry) {
+
+                        if($entry->date > $until) unset($history[$key]);
+
+                    }
+
+                }
+            
+
+                $results = array_merge($results, $history);    
+
+            }
+
+        }
+
+        return $results;
+
+    }
+
     public function getHistory($year, $month) {
 
         $crawler = $this->getHistoryPreload();
