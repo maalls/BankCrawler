@@ -46,6 +46,8 @@ class EposTest extends \PHPUnit_Framework_TestCase
 
         $history = $epos->extractHistory($crawler);
 
+        $this->assertEquals(count($history), 30);
+
     }
 
     /*public function testGetHistory() {

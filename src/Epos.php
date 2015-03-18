@@ -45,14 +45,29 @@ class Epos extends BankCrawler {
 
         $tables = $this->extractHistoryTables($crawler);
 
+        // 1 -> shopping
         // 3 -> cashing
         // 5 -> other
-        // 1 -> shopping
+        
         
         $shoppingTable = $tables[1];
-        $results = $this->extractEntriesFromTable($shoppingTable);
+        $shoppings = $this->extractEntriesFromTable($shoppingTable);
+        $cashingTable = $tables[3]; 
+        $cashings = $this->extractEntriesFromTable($cashingTable, "cashing");
 
-        print_r($results);
+        $otherTable = $tables[5]; 
+        $others = $this->extractEntriesFromTable($otherTable, "other");
+
+        $results = array_merge($shoppings, $cashings);
+        $results = array_merge($results, $others);
+
+        usort($results, function($a, $b) {
+
+            return $a->date > $b->date ? 1: -1;
+
+        });
+
+        return $results;
 
     }
 
@@ -68,9 +83,10 @@ class Epos extends BankCrawler {
 
     }
 
-    public function extractEntriesFromTable($table, $type = "shopping") {
+    public function extractEntriesFromTable($table, $category = "shopping") {
 
-        if(!in_array($type, array("shopping", "cashing", "other"))) throw new \Exception("Invalid table type $type.");
+        if(!in_array($category, array("shopping", "cashing", "other"))) throw new \Exception("Invalid table type $type.");
+
 
         $results = $table->filterXPath("//tr")->each(function($row, $index) {
 
@@ -87,21 +103,50 @@ class Epos extends BankCrawler {
 
         });
 
-        unset($results[0]);
-        array_pop($results);
-
         $entries = array();
 
-        foreach($results as $row) {
+        if(count($results) >= 2) {
 
-            $entry = new Entry();
-            $entry->date = $row[0];
-            $entry->location = $row[1];
-            $entry->amount = $row[3];
-            $entry->due_date = $row[5];
-            $entry->comment = $row[6];
+            unset($results[0]);
+           
+            foreach($results as $row) {
 
-            $entries[] = $entry;
+                if(count($row) < 6) continue;
+
+                $entry = new Entry();
+                $entry->category = $category;
+                $entry->date = date("Y-m-d", strtotime($row[0]));
+                $entry->location = $row[1];
+
+                if($category == "shopping") {
+                
+                    $amountOffset = 3;    
+                    $dueDateOffset = 5;
+                    $commentOffset = 6;
+
+                }
+                else if($category == "cashing") {
+
+                    $amountOffset = 2;    
+                    $dueDateOffset = 4;
+                    $commentOffset = 5;
+
+                }
+                else {
+
+                    $amountOffset = 3;    
+                    $dueDateOffset = 4;
+                    $commentOffset = 5;
+
+                }
+
+                $entry->amount = preg_replace("@[円,]@isu", "", $row[$amountOffset]);
+                $entry->due_month = date("Y-m-d", strtotime($row[$dueDateOffset] . "/1"));
+                $entry->comment = $row[$commentOffset];
+
+                $entries[] = $entry;
+
+            }
 
         }
 
@@ -148,7 +193,8 @@ class Entry {
     public $date;
     public $location;
     public $amount;
-    public $due_date;
+    public $due_month;
     public $comment;
+    public $category;
 
 }
