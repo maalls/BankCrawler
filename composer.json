@@ -1,6 +1,7 @@
 {
     "name": "maalls/bankcrawler",
     "require": {
+	"php": ">=5.3.3",
         "symfony/dom-crawler": "~2.6",
         "symfony/yaml": "~2.6",
         "fabpot/goutte": "~2.0"
