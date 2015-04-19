@@ -21,14 +21,11 @@ class Crawler extends BankCrawler {
 
     public function init() {
 
-
         parent::init();
         $client = $this->client;
-
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_SSL_VERIFYPEER, true);
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_SSLVERSION, 3);
         $client->getClient()->setDefaultOption('config/curl/'.CURLOPT_FOLLOWLOCATION, true);
-
 
     }
 
